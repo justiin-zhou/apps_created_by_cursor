@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 会议助手 - 智能会议管理系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <i class="fas fa-brain"></i>
+                <span>AI 会议助手</span>
+            </div>
+            <div class="nav-links">
+                <a href="#home" class="nav-link active">首页</a>
+                <a href="#features" class="nav-link">功能</a>
+                <a href="#about" class="nav-link">关于</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Hero 区域 -->
+            <section class="hero" id="home">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <span class="gradient-text">智能会议助手</span>
+                    </h1>
+                    <p class="hero-subtitle">
+                        基于 DeepSeek AI 的智能会议管理系统<br>
+                        让会议记录更简单、高效、智能
+                    </p>
+                    <div class="hero-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-microphone"></i>
+                            <span>语音转写</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span>智能纪要</span>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-comments"></i>
+                            <span>智能问答</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 功能标签页 -->
+            <section class="features-section" id="features">
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="transcribe">
+                        <i class="fas fa-microphone"></i>
+                        会议转写
+                    </button>
+                    <button class="tab-button" data-tab="summary">
+                        <i class="fas fa-file-alt"></i>
+                        生成纪要
+                    </button>
+                    <button class="tab-button" data-tab="qa">
+                        <i class="fas fa-comments"></i>
+                        智能问答
+                    </button>
+                    <button class="tab-button" data-tab="full">
+                        <i class="fas fa-rocket"></i>
+                        完整流程
+                    </button>
+                </div>
+
+                <!-- 会议转写 -->
+                <div class="tab-content active" id="transcribe-tab">
+                    <div class="feature-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-microphone"></i>
+                            会议转写
+                        </h2>
+                        <p class="card-description">上传音频文件或输入文本，AI 将自动进行格式化和优化</p>
+                        
+                        <div class="input-section">
+                            <div class="upload-area" id="upload-area">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>拖拽音频文件到此处或点击上传</p>
+                                <input type="file" id="audio-file" accept=".mp3,.wav,.m4a,.ogg,.flac" hidden>
+                                <button class="btn btn-secondary" onclick="document.getElementById('audio-file').click()">
+                                    选择文件
+                                </button>
+                                <small>支持: MP3, WAV, M4A, OGG, FLAC (最大 100MB)</small>
+                            </div>
+
+                            <div class="divider">
+                                <span>或</span>
+                            </div>
+
+                            <div class="text-input-area">
+                                <label for="meeting-text">直接输入会议文本：</label>
+                                <textarea 
+                                    id="meeting-text" 
+                                    rows="8" 
+                                    placeholder="粘贴或输入会议内容...&#10;&#10;例如：&#10;今天的团队会议主要讨论了三个议题。&#10;首先是关于新产品的开发进度..."></textarea>
+                            </div>
+
+                            <button class="btn btn-primary" id="transcribe-btn">
+                                <i class="fas fa-play"></i>
+                                开始转写
+                            </button>
+                        </div>
+
+                        <div class="result-section" id="transcribe-result" style="display: none;">
+                            <h3><i class="fas fa-check-circle"></i> 转写结果</h3>
+                            <div class="result-content" id="transcribe-output"></div>
+                            <div class="result-actions">
+                                <button class="btn btn-secondary" onclick="copyToClipboard('transcribe-output')">
+                                    <i class="fas fa-copy"></i> 复制
+                                </button>
+                                <button class="btn btn-secondary" onclick="downloadText('transcribe-output', 'meeting-transcription.txt')">
+                                    <i class="fas fa-download"></i> 下载
+                                </button>
+                                <button class="btn btn-primary" onclick="useForSummary()">
+                                    <i class="fas fa-arrow-right"></i> 生成纪要
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 生成纪要 -->
+                <div class="tab-content" id="summary-tab">
+                    <div class="feature-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-file-alt"></i>
+                            生成会议纪要
+                        </h2>
+                        <p class="card-description">基于会议转写内容，自动生成结构化会议纪要</p>
+                        
+                        <div class="input-section">
+                            <div class="text-input-area">
+                                <label for="summary-text">会议转写内容：</label>
+                                <textarea 
+                                    id="summary-text" 
+                                    rows="10" 
+                                    placeholder="粘贴会议转写内容..."></textarea>
+                            </div>
+
+                            <button class="btn btn-primary" id="summary-btn">
+                                <i class="fas fa-magic"></i>
+                                生成纪要
+                            </button>
+                        </div>
+
+                        <div class="result-section" id="summary-result" style="display: none;">
+                            <h3><i class="fas fa-check-circle"></i> 会议纪要</h3>
+                            <div class="result-content markdown-content" id="summary-output"></div>
+                            <div class="result-actions">
+                                <button class="btn btn-secondary" onclick="copyToClipboard('summary-output')">
+                                    <i class="fas fa-copy"></i> 复制
+                                </button>
+                                <button class="btn btn-secondary" onclick="downloadText('summary-output', 'meeting-summary.txt')">
+                                    <i class="fas fa-download"></i> 下载
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 智能问答 -->
+                <div class="tab-content" id="qa-tab">
+                    <div class="feature-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-comments"></i>
+                            会议智能问答
+                        </h2>
+                        <p class="card-description">基于会议内容回答您的问题</p>
+                        
+                        <div class="input-section">
+                            <div class="text-input-area">
+                                <label for="qa-context">会议内容：</label>
+                                <textarea 
+                                    id="qa-context" 
+                                    rows="6" 
+                                    placeholder="粘贴会议内容..."></textarea>
+                            </div>
+
+                            <div class="qa-container">
+                                <div class="chat-messages" id="chat-messages">
+                                    <div class="welcome-message">
+                                        <i class="fas fa-robot"></i>
+                                        <p>您好！我是 AI 会议助手。请先输入会议内容，然后向我提问。</p>
+                                    </div>
+                                </div>
+
+                                <div class="chat-input-area">
+                                    <input 
+                                        type="text" 
+                                        id="question-input" 
+                                        placeholder="输入您的问题..."
+                                        onkeypress="if(event.key==='Enter') askQuestion()">
+                                    <button class="btn btn-primary" onclick="askQuestion()">
+                                        <i class="fas fa-paper-plane"></i>
+                                        发送
+                                    </button>
+                                </div>
+
+                                <div class="quick-questions">
+                                    <p><i class="fas fa-lightbulb"></i> 快速提问：</p>
+                                    <button class="quick-btn" onclick="setQuestion('会议的主要决策是什么？')">主要决策</button>
+                                    <button class="quick-btn" onclick="setQuestion('有哪些行动项？')">行动项</button>
+                                    <button class="quick-btn" onclick="setQuestion('下次会议什么时候？')">下次会议</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 完整流程 -->
+                <div class="tab-content" id="full-tab">
+                    <div class="feature-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-rocket"></i>
+                            完整流程处理
+                        </h2>
+                        <p class="card-description">一键完成：转写 → 生成纪要</p>
+                        
+                        <div class="input-section">
+                            <div class="upload-area" id="upload-area-full">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>拖拽音频文件到此处或点击上传</p>
+                                <input type="file" id="audio-file-full" accept=".mp3,.wav,.m4a,.ogg,.flac" hidden>
+                                <button class="btn btn-secondary" onclick="document.getElementById('audio-file-full').click()">
+                                    选择文件
+                                </button>
+                            </div>
+
+                            <div class="divider">
+                                <span>或</span>
+                            </div>
+
+                            <div class="text-input-area">
+                                <label for="full-text">直接输入会议文本：</label>
+                                <textarea 
+                                    id="full-text" 
+                                    rows="8" 
+                                    placeholder="粘贴或输入会议内容..."></textarea>
+                            </div>
+
+                            <button class="btn btn-primary btn-large" id="full-process-btn">
+                                <i class="fas fa-rocket"></i>
+                                一键处理（转写 + 纪要）
+                            </button>
+                        </div>
+
+                        <div class="result-section" id="full-result" style="display: none;">
+                            <div class="result-tabs">
+                                <button class="result-tab active" data-result="transcription">转写结果</button>
+                                <button class="result-tab" data-result="summary">会议纪要</button>
+                            </div>
+                            
+                            <div class="result-tab-content active" id="result-transcription">
+                                <h3><i class="fas fa-microphone"></i> 转写结果</h3>
+                                <div class="result-content" id="full-transcribe-output"></div>
+                            </div>
+                            
+                            <div class="result-tab-content" id="result-summary">
+                                <h3><i class="fas fa-file-alt"></i> 会议纪要</h3>
+                                <div class="result-content markdown-content" id="full-summary-output"></div>
+                            </div>
+
+                            <div class="result-actions">
+                                <button class="btn btn-secondary" onclick="downloadFullResults()">
+                                    <i class="fas fa-download"></i> 下载全部
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Loading 动画 -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p id="loading-text">处理中...</p>
+        </div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <div class="toast" id="toast"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+

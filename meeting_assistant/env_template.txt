@@ -1,0 +1,22 @@
+# AI 服务配置
+# 使用 DeepSeek API（推荐，国内访问快）
+USE_DEEPSEEK=true
+
+# DeepSeek API 配置
+DEEPSEEK_API_KEY=sk-216146b2511e49c08ad85a75ede75805
+DEEPSEEK_API_BASE=https://api.deepseek.com
+DEEPSEEK_MODEL_NAME=deepseek-chat
+
+# OpenAI API 配置（备用，如果 USE_DEEPSEEK=false）
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL_NAME=gpt-4
+
+# 语音识别配置（可选）
+# 如果不设置，将使用主 API 的配置
+# WHISPER_API_KEY=your_whisper_api_key
+# WHISPER_API_BASE=https://api.openai.com/v1
+
+# 服务器配置
+SERVER_HOST=0.0.0.0
+SERVER_PORT=8000
+
