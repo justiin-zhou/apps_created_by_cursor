@@ -1,0 +1,20 @@
+# Web框架
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.18
+
+# AI & ML
+crewai==0.83.2
+crewai-tools==0.18.2
+langchain==0.3.13
+langchain-openai==0.2.14
+litellm==1.56.3
+openai==1.57.4
+
+# 数据处理
+pydantic==2.10.3
+python-dotenv==1.0.1
+
+# 工具
+aiofiles==24.1.0
+

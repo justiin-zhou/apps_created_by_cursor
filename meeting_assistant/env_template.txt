@@ -3,7 +3,7 @@
 USE_DEEPSEEK=true
 
 # DeepSeek API 配置
-DEEPSEEK_API_KEY=sk-216146b2511e49c08ad85a75ede75805
+DEEPSEEK_API_KEY=sk-xxxxx
 DEEPSEEK_API_BASE=https://api.deepseek.com
 DEEPSEEK_MODEL_NAME=deepseek-chat
 

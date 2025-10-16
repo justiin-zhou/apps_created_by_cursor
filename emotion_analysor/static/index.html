@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能情绪识别系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">
+                    <span class="emoji">🎭</span>
+                    智能情绪识别系统
+                </h1>
+                <p class="subtitle">基于AI多Agent协作的情绪分析平台</p>
+            </div>
+        </header>
+
+        <!-- 主要内容区 -->
+        <main class="main-content">
+            <!-- 输入区域 -->
+            <div class="input-section">
+                <div class="card">
+                    <h2 class="section-title">📝 文本输入</h2>
+                    <textarea 
+                        id="textInput" 
+                        class="text-input" 
+                        placeholder="请输入您想要分析的文本内容...&#10;例如：今天真是太开心了！工作进展顺利，还收到了好消息。"
+                        rows="6"
+                    ></textarea>
+                </div>
+
+                <div class="card">
+                    <h2 class="section-title">🎙️ 音频上传</h2>
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-content">
+                            <div class="upload-icon">📁</div>
+                            <p class="upload-text">点击或拖拽音频文件到此处</p>
+                            <p class="upload-hint">支持 MP3, WAV, M4A, OGG, FLAC 格式</p>
+                            <input 
+                                type="file" 
+                                id="audioInput" 
+                                accept=".mp3,.wav,.m4a,.ogg,.flac" 
+                                class="file-input"
+                            >
+                        </div>
+                        <div id="fileInfo" class="file-info" style="display: none;">
+                            <span id="fileName"></span>
+                            <button id="removeFile" class="remove-btn">✕</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 对话历史 -->
+                <div class="card">
+                    <div class="section-header">
+                        <h2 class="section-title">💬 对话历史</h2>
+                        <button id="clearHistory" class="clear-btn">清空历史</button>
+                    </div>
+                    <div id="conversationHistory" class="conversation-history">
+                        <p class="empty-hint">暂无对话历史</p>
+                    </div>
+                </div>
+
+                <!-- 分析按钮 -->
+                <button id="analyzeBtn" class="analyze-btn">
+                    <span class="btn-text">开始分析</span>
+                    <span class="btn-icon">🔍</span>
+                </button>
+            </div>
+
+            <!-- 结果区域 -->
+            <div class="result-section">
+                <div class="card result-card">
+                    <h2 class="section-title">📊 分析结果</h2>
+                    
+                    <!-- 加载动画 -->
+                    <div id="loading" class="loading" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p class="loading-text">AI正在分析中...</p>
+                    </div>
+
+                    <!-- 结果展示 -->
+                    <div id="resultContent" class="result-content" style="display: none;">
+                        <!-- 主要情绪 -->
+                        <div class="primary-emotion">
+                            <div class="emotion-label">主要情绪</div>
+                            <div id="primaryEmotion" class="emotion-value"></div>
+                        </div>
+
+                        <!-- 所有情绪 -->
+                        <div class="emotions-list">
+                            <h3 class="subsection-title">识别出的情绪</h3>
+                            <div id="emotionsList"></div>
+                        </div>
+
+                        <!-- 综合分析 -->
+                        <div class="analysis-section">
+                            <h3 class="subsection-title">综合分析</h3>
+                            <div id="analysisText" class="analysis-text"></div>
+                        </div>
+
+                        <!-- 时间戳 -->
+                        <div class="timestamp" id="timestamp"></div>
+                    </div>
+
+                    <!-- 空状态 -->
+                    <div id="emptyState" class="empty-state">
+                        <div class="empty-icon">🤔</div>
+                        <p class="empty-text">请输入文本或上传音频开始分析</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>Powered by CrewAI + Qwen-Omni | 情绪识别系统 v1.0.0</p>
+        </footer>
+    </div>
+
+    <!-- Toast通知 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+

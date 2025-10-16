@@ -1,0 +1,40 @@
+使用 CrewAI Agent 框架创建一个完整的语音+文本情绪识别系统，包含以下要求：
+
+【核心功能】
+1. 支持根据对话历史和当前语音输入识别用户情绪；
+2. 情绪分类覆盖日常生活中人类常见情绪类型，分类结果可包含多个；
+
+【技术栈】
+- AI模型：qwen-omni(使用litellm访问qwen api)
+- 后端：FastAPI + CrewAI + LangChain
+- 前端：HTML/CSS/JS 现代化 Web UI
+- 架构：Multi-Agent 协作系统
+
+【项目结构】
+emotion_detect/
+├── agents/              # 存放crewai agent
+├── tasks/               # 对应的任务定义
+├── tools/               # 存放定义的工具
+├── crew/                # EmotionDetectCrew 协作系统
+├── static/              # 前端：index.html, css/, js/
+├── config.py            # 支持qwen-omni
+├── models.py            # Pydantic数据模型
+├── server.py            # FastAPI服务器
+├── requirements.txt
+├── env_template.txt
+└── README.md
+
+【API端点】
+- GET /: 返回前端页面
+- GET /health: 健康检查
+- POST /api/emotion_detect: 情绪识别
+
+【前端UI要求】
+- 紫蓝渐变主题（#667eea → #764ba2）
+- 支持文件拖拽上传
+- Loading动画+Toast通知
+- 聊天式问答界面
+- 响应式设计
+- 美观现代
+
+请创建一个生产级的情绪识别系统，代码清晰、注释完整、中文友好。

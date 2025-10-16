@@ -1,0 +1,14 @@
+# DashScope API 配置
+DASHSCOPE_API_KEY=sk-xxx
+DASHSCOPE_API_BASE=https://dashscope.aliyuncs.com/compatible-mode/v1
+
+# 模型配置
+LLM_MODEL=qwen-omni
+LLM_TEMPERATURE=0.7
+LLM_MAX_TOKENS=4096
+
+# 服务器配置
+HOST=0.0.0.0
+PORT=8000
+DEBUG=True
+
