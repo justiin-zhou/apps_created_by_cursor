@@ -1,0 +1,82 @@
+使用 CrewAI Agent 框架创建一个完整的智能会议助手系统，包含以下要求：
+
+【核心功能】
+1. 会议转写：支持音频文件或文本输入，自动格式化
+2. 会议纪要生成：提取会议概览、讨论点、决策、行动项
+3. 智能问答：基于会议内容回答问题，提供引用
+4. 完整流程：一键完成转写+纪要
+
+【技术栈】
+- AI模型：DeepSeek API（可切换OpenAI）
+- 后端：FastAPI + CrewAI + LangChain
+- 前端：HTML/CSS/JS 现代化 Web UI
+- 架构：Multi-Agent 协作系统
+
+【项目结构】
+meeting_assistant/
+├── agents/              # 3个Agent：transcription, summary, qa
+├── tasks/               # 对应的任务定义
+├── tools/               # TranscriptionTool（Whisper API）
+├── crew/                # MeetingAssistantCrew 协作系统
+├── static/              # 前端：index.html, css/, js/
+├── config.py            # 支持DeepSeek/OpenAI切换
+├── models.py            # Pydantic数据模型
+├── server.py            # FastAPI服务器
+├── requirements.txt
+├── env_template.txt
+└── README.md
+
+【Agent设计】
+1. TranscriptionAgent: 角色=转写专家，temperature=0.1
+2. SummaryAgent: 角色=纪要专家，temperature=0.3
+3. QAAgent: 角色=问答专家，temperature=0.2
+所有Agent使用DeepSeek Chat模型
+
+【API端点】
+- GET /: 返回前端页面
+- GET /health: 健康检查
+- POST /api/transcribe: 会议转写
+- POST /api/summary: 生成纪要
+- POST /api/qa: 问答
+- POST /api/process-full: 完整流程
+
+【前端UI要求】
+- 紫蓝渐变主题（#667eea → #764ba2）
+- 4个功能标签页
+- 支持文件拖拽上传
+- Loading动画+Toast通知
+- 结果可复制、下载、导入下一步
+- 聊天式问答界面
+- 响应式设计
+- 美观现代
+
+【配置支持】
+env文件配置：
+- USE_DEEPSEEK=true
+- DEEPSEEK_API_KEY, DEEPSEEK_API_BASE, DEEPSEEK_MODEL_NAME
+- OPENAI_API_KEY, OPENAI_MODEL_NAME（备用）
+- WHISPER_API_KEY（音频转写）
+
+【关键实现】
+1. config.py 根据USE_DEEPSEEK选择API
+2. ChatOpenAI使用base_url连接DeepSeek
+3. 静态文件挂载：app.mount("/static", StaticFiles)
+4. 文件上传支持：UploadFile + Form
+5. CORS配置
+6. 完善错误处理
+
+【文档要求】
+README包含：功能介绍、快速开始（3步）、API使用、示例代码、配置说明、FAQ
+
+【验收标准】
+✅ 完整项目结构和所有文件
+✅ DeepSeek API集成成功
+✅ 3个Agent正常协作
+✅ 美观现代的Web界面
+✅ 所有API功能正常
+✅ 完善的错误处理和用户提示
+✅ 完整文档和配置说明
+✅ 可成功运行完整流程
+
+请创建一个生产级的智能会议助手系统，代码清晰、注释完整、中文友好。
+
