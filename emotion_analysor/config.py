@@ -27,7 +27,7 @@ class Config:
     # 文件上传配置
     UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
     MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
-    ALLOWED_AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".ogg", ".flac"}
+    ALLOWED_AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".ogg", ".flac", ".webm"}
     
     # 情绪分类配置
     EMOTION_CATEGORIES = [

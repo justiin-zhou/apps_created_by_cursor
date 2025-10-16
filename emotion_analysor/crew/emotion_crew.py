@@ -1,40 +1,31 @@
 """
-情绪识别Crew - 协调多个Agent完成情绪识别任务
+情绪识别Crew - 使用单一 Agent 完成多模态情绪识别
 """
-from crewai import Crew, Process
+from crewai import Crew, Process, Task
 from typing import Dict, List, Optional, Any
 import json
 import logging
 
-from agents.emotion_agent import create_emotion_detection_agent
-from agents.audio_agent import create_audio_analysis_agent
 from agents.synthesis_agent import create_emotion_synthesis_agent
-from tasks.emotion_tasks import EmotionDetectionTasks
 from tools.audio_processor import AudioProcessorTool
-from tools.emotion_analyzer import EmotionAnalyzerTool
 from models import EmotionDetectRequest, EmotionDetectResponse, EmotionResult
 
 logger = logging.getLogger(__name__)
 
 class EmotionDetectionCrew:
-    """情绪识别Crew - Multi-Agent协作系统"""
+    """情绪识别Crew - 单Agent多模态分析系统"""
     
     def __init__(self):
         """初始化Crew"""
-        # 初始化工具
-        self.audio_tool = AudioProcessorTool()
-        self.emotion_tool = EmotionAnalyzerTool()
+        # 初始化多模态分析工具
+        self.multimodal_tool = AudioProcessorTool()
         
-        # 初始化Agents
-        self.emotion_agent = create_emotion_detection_agent(
-            tools=[self.emotion_tool]
+        # 初始化情绪分析Agent（配备多模态工具）
+        self.emotion_agent = create_emotion_synthesis_agent(
+            tools=[self.multimodal_tool]
         )
-        self.audio_agent = create_audio_analysis_agent(
-            tools=[self.audio_tool]
-        )
-        self.synthesis_agent = create_emotion_synthesis_agent()
         
-        logger.info("EmotionDetectionCrew 初始化完成")
+        logger.info("EmotionDetectionCrew 初始化完成（单Agent架构）")
     
     def analyze_emotion(
         self,
@@ -50,31 +41,8 @@ class EmotionDetectionCrew:
             情绪识别结果
         """
         try:
-            tasks = []
-            task_results = {}
-            
-            # 1. 如果有文本，创建文本分析任务
-            if request.text:
-                logger.info(f"创建文本分析任务: {request.text[:50]}...")
-                text_task = EmotionDetectionTasks.analyze_text_emotion_task(
-                    agent=self.emotion_agent,
-                    text=request.text,
-                    conversation_history=request.conversation_history
-                )
-                tasks.append(text_task)
-            
-            # 2. 如果有音频，创建音频分析任务
-            if request.audio_url:
-                logger.info(f"创建音频分析任务: {request.audio_url}")
-                audio_task = EmotionDetectionTasks.analyze_audio_emotion_task(
-                    agent=self.audio_agent,
-                    audio_path=request.audio_url,
-                    text_content=request.text
-                )
-                tasks.append(audio_task)
-            
-            # 如果既没有文本也没有音频，返回错误
-            if not tasks:
+            # 验证输入
+            if not request.text and not request.audio_url:
                 return EmotionDetectResponse(
                     success=False,
                     emotions=[],
@@ -82,57 +50,63 @@ class EmotionDetectionCrew:
                     analysis="错误: 请提供文本或音频输入"
                 )
             
-            # 3. 执行分析任务（顺序执行）
-            if len(tasks) == 1:
-                # 只有一个任务，直接执行
-                crew = Crew(
-                    agents=[tasks[0].agent],
-                    tasks=[tasks[0]],
-                    process=Process.sequential,
-                    verbose=True
-                )
-                result = crew.kickoff()
-                if request.text and not request.audio_url:
-                    task_results['text_analysis'] = str(result)
-                else:
-                    task_results['audio_analysis'] = str(result)
-            else:
-                # 有多个任务，分别执行
-                for i, task in enumerate(tasks):
-                    crew = Crew(
-                        agents=[task.agent],
-                        tasks=[task],
-                        process=Process.sequential,
-                        verbose=True
-                    )
-                    result = crew.kickoff()
-                    if i == 0 and request.text:
-                        task_results['text_analysis'] = str(result)
-                    elif request.audio_url:
-                        task_results['audio_analysis'] = str(result)
+            # 格式化对话历史
+            conversation_context = ""
+            if request.conversation_history:
+                conversation_context = "\n".join([
+                    f"{'用户' if msg.get('role') == 'user' else '助手'}: {msg.get('content', '')}"
+                    for msg in request.conversation_history[-5:]  # 最近5条
+                ])
             
-            # 4. 创建综合分析任务
-            logger.info("创建综合分析任务")
-            synthesis_task = EmotionDetectionTasks.synthesize_emotion_task(
-                agent=self.synthesis_agent,
-                text_analysis=task_results.get('text_analysis'),
-                audio_analysis=task_results.get('audio_analysis'),
-                conversation_history=request.conversation_history
+            # 构建任务描述
+            task_description = f"""
+请使用多模态情绪分析工具分析用户的情绪状态。
+
+输入信息：
+- 文本内容: {request.text or '无'}
+- 音频文件: {request.audio_url or '无'}
+- 对话历史: {conversation_context or '无'}
+
+请调用"多模态情绪分析工具"，传入以下参数：
+- audio_path: "{request.audio_url or ''}"
+- text: "{request.text or ''}"
+- conversation_history: "{conversation_context}"
+
+工具会返回JSON格式的分析结果。请确保最终输出是有效的JSON格式：
+{{
+    "emotions": [
+        {{
+            "emotion": "情绪类型",
+            "confidence": 0.85,
+            "reason": "识别理由"
+        }}
+    ],
+    "primary_emotion": "主要情绪",
+    "analysis": "综合分析"
+}}
+"""
+            
+            # 创建任务
+            task = Task(
+                description=task_description,
+                expected_output="包含emotions数组、primary_emotion和analysis的JSON格式结果",
+                agent=self.emotion_agent,
             )
             
-            # 5. 执行综合分析
-            synthesis_crew = Crew(
-                agents=[self.synthesis_agent],
-                tasks=[synthesis_task],
+            # 创建并执行Crew
+            logger.info("开始多模态情绪分析...")
+            crew = Crew(
+                agents=[self.emotion_agent],
+                tasks=[task],
                 process=Process.sequential,
                 verbose=True
             )
             
-            synthesis_result = synthesis_crew.kickoff()
-            logger.info(f"综合分析结果: {synthesis_result}")
+            result = crew.kickoff()
+            logger.info(f"分析完成，结果: {result}")
             
-            # 6. 解析结果
-            return self._parse_result(str(synthesis_result))
+            # 解析结果
+            return self._parse_result(str(result))
             
         except Exception as e:
             logger.error(f"情绪识别过程出错: {str(e)}", exc_info=True)

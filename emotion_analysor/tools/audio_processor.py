@@ -11,129 +11,128 @@ from config import config
 
 class AudioProcessorInput(BaseModel):
     """音频处理工具输入模型"""
-    audio_path: str = Field(..., description="音频文件路径")
-    extract_text: bool = Field(default=True, description="是否提取文本")
+    audio_path: str = Field(default="", description="音频文件路径（可选）")
+    text: str = Field(default="", description="当前文本内容（可选）")
+    conversation_history: str = Field(default="", description="对话历史（可选）")
 
 class AudioProcessorTool(BaseTool):
-    """音频处理工具 - 使用 qwen-omni 直接分析音频情绪"""
+    """音频处理工具 - 使用 qwen-omni 综合分析音频、文本和对话历史"""
     
-    name: str = "音频情绪分析工具"
+    name: str = "多模态情绪分析工具"
     description: str = (
-        "使用 qwen-omni 模型直接分析音频文件中的情绪和语音特征。"
-        "输入参数: audio_path (音频文件路径)"
-        "返回: 音频中的情绪特征、语调分析、语速评估等"
+        "使用 qwen-omni 模型综合分析音频、文本和对话历史，识别用户的情绪状态。"
+        "输入参数: audio_path (音频文件路径), text (当前文本), conversation_history (对话历史)"
+        "返回: 完整的情绪分析结果"
     )
     args_schema: Type[BaseModel] = AudioProcessorInput
     
-    def _run(self, audio_path: str, extract_text: bool = True) -> str:
+    def _run(self, audio_path: str = "", text: str = "", conversation_history: str = "") -> str:
         """
-        执行音频情绪分析
+        执行多模态情绪分析
         
         Args:
-            audio_path: 音频文件路径
-            extract_text: 是否提取文本（保留参数兼容性）
+            audio_path: 音频文件路径（可选）
+            text: 当前文本内容（可选）
+            conversation_history: 对话历史（可选）
             
         Returns:
-            音频情绪分析结果
+            综合情绪分析结果
         """
         try:
-            # 检查文件是否存在
-            if not os.path.exists(audio_path):
-                return f"错误: 音频文件不存在: {audio_path}"
+            # 使用 OpenAI SDK 调用 qwen-omni
+            client = OpenAI(
+                api_key=config.DASHSCOPE_API_KEY,
+                base_url=config.DASHSCOPE_API_BASE,
+            )
             
-            # 获取文件信息
-            file_size = os.path.getsize(audio_path)
-            file_ext = os.path.splitext(audio_path)[1].lower()
+            # 构建分析提示词
+            analysis_prompt = """请综合分析用户的情绪状态，识别出所有可能的情绪类型。
+
+可选的情绪类型包括但不限于：
+开心、快乐、兴奋、满足、悲伤、难过、失落、沮丧、愤怒、生气、烦躁、不满、
+焦虑、担心、紧张、恐惧、惊讶、震惊、困惑、平静、放松、淡定、厌恶、反感、
+无聊、期待、希望、好奇、感激、感动、温暖、孤独、寂寞、无助、自信、自豪、
+骄傲、羞愧、内疚、尴尬、疲惫、困倦、无力
+
+请以 JSON 格式返回分析结果，格式如下：
+{
+    "emotions": [
+        {
+            "emotion": "情绪类型",
+            "confidence": 0.85,
+            "reason": "识别理由"
+        }
+    ],
+    "primary_emotion": "主要情绪",
+    "analysis": "综合分析（200字以内）"
+}
+
+"""
             
-            # 读取音频文件并转换为base64
-            try:
+            # 添加对话历史上下文
+            if conversation_history:
+                analysis_prompt += f"\n对话历史:\n{conversation_history}\n"
+            
+            # 添加当前文本
+            if text:
+                analysis_prompt += f"\n当前文本: {text}\n"
+            
+            # 构建消息内容
+            message_content = [
+                {
+                    "type": "text",
+                    "text": analysis_prompt
+                }
+            ]
+            
+            # 如果有音频，添加音频输入
+            if audio_path and os.path.exists(audio_path):
+                # 读取音频文件
                 with open(audio_path, 'rb') as f:
                     audio_data = f.read()
                     audio_base64 = base64.b64encode(audio_data).decode('utf-8')
-            except Exception as e:
-                return f"错误: 无法读取音频文件: {str(e)}"
-            
-            # 构建音频 URL（data URI 格式）
-            # qwen-omni 支持的格式
-            mime_types = {
-                '.mp3': 'audio/mpeg',
-                '.wav': 'audio/wav',
-                '.m4a': 'audio/mp4',
-                '.ogg': 'audio/ogg',
-                '.flac': 'audio/flac'
-            }
-            mime_type = mime_types.get(file_ext, 'audio/wav')
-            audio_url = f"data:{mime_type};base64,{audio_base64}"
-            
-            # 使用 OpenAI SDK 调用 qwen-omni 分析音频
-            try:
-                client = OpenAI(
-                    api_key=config.DASHSCOPE_API_KEY,
-                    base_url=config.DASHSCOPE_API_BASE,
-                )
                 
-                # 构建消息，包含音频输入
-                messages = [{
+                file_ext = os.path.splitext(audio_path)[1].lstrip('.')
+                
+                # 处理格式映射（某些格式需要转换）
+                format_mapping = {
+                    'webm': 'webm',
+                    'wav': 'wav',
+                    'mp3': 'mp3',
+                    'm4a': 'm4a',
+                    'ogg': 'ogg',
+                    'flac': 'flac'
+                }
+                audio_format = format_mapping.get(file_ext, 'wav')
+                
+                message_content.append({
+                    "type": "input_audio",
+                    "input_audio": {
+                        "data": audio_base64,
+                        "format": audio_format
+                    }
+                })
+            
+            # 调用 API
+            response = client.chat.completions.create(
+                model="qwen-audio-turbo" if audio_path else config.QWEN_LLM_MODEL,
+                messages=[{
                     "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": """请分析这段音频中说话者的情绪状态。请从以下维度进行分析：
-
-1. 语调特征（高昂/低沉/平稳）
-2. 语速（快速/正常/缓慢）
-3. 音量和能量（高/中/低）
-4. 情绪色彩（积极/消极/中性）
-5. 可能的情绪类型
-
-请提供详细的分析结果。"""
-                        },
-                        {
-                            "type": "input_audio",
-                            "input_audio": {
-                                "data": audio_base64,
-                                "format": file_ext.lstrip('.')
-                            }
-                        }
-                    ]
-                }]
-                
-                # 调用 API
-                response = client.chat.completions.create(
-                    model="qwen-audio-turbo",  # 使用 qwen-audio-turbo 模型
-                    messages=messages,
-                    temperature=0.7,
-                    max_tokens=1000
-                )
-                
-                # 提取分析结果
-                analysis = response.choices[0].message.content
-                
-                result = f"""音频情绪分析结果:
-文件信息:
-- 路径: {audio_path}
-- 大小: {file_size} 字节
-- 格式: {file_ext}
-
-AI 分析结果:
-{analysis}
-"""
-                return result
-                
-            except Exception as e:
-                # 如果 API 调用失败，返回基础文件信息
-                return f"""音频文件信息:
-- 文件路径: {audio_path}
-- 文件大小: {file_size} 字节
-- 文件格式: {file_ext}
-
-注意: 直接音频分析失败 ({str(e)})，建议使用音频文本转写后进行分析。
-音频文件已准备好，可以通过其他方式处理。"""
+                    "content": message_content
+                }],
+                temperature=config.LLM_TEMPERATURE,
+                max_tokens=config.LLM_MAX_TOKENS
+            )
+            
+            # 提取分析结果
+            analysis = response.choices[0].message.content
+            
+            return analysis
             
         except Exception as e:
-            return f"音频处理出错: {str(e)}"
+            return f"情绪分析失败: {str(e)}"
     
-    async def _arun(self, audio_path: str, extract_text: bool = True) -> str:
+    async def _arun(self, audio_path: str = "", text: str = "", conversation_history: str = "") -> str:
         """异步执行"""
-        return self._run(audio_path, extract_text)
+        return self._run(audio_path, text, conversation_history)
 

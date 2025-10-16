@@ -34,7 +34,27 @@
                 </div>
 
                 <div class="card">
-                    <h2 class="section-title">🎙️ 音频上传</h2>
+                    <h2 class="section-title">🎙️ 语音输入</h2>
+                    
+                    <!-- 录音按钮 -->
+                    <div class="record-section">
+                        <button id="recordBtn" class="record-btn">
+                            <span class="record-icon">🎤</span>
+                            <span class="record-text">点击开始录音</span>
+                        </button>
+                        <div id="recordingInfo" class="recording-info" style="display: none;">
+                            <div class="recording-indicator">
+                                <span class="recording-dot"></span>
+                                <span>正在录音...</span>
+                            </div>
+                            <div id="recordingTime" class="recording-time">00:00</div>
+                            <button id="stopRecordBtn" class="stop-record-btn">停止录音</button>
+                        </div>
+                    </div>
+
+                    <div class="divider">或</div>
+                    
+                    <!-- 文件上传 -->
                     <div class="upload-area" id="uploadArea">
                         <div class="upload-content">
                             <div class="upload-icon">📁</div>
