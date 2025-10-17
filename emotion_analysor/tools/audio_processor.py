@@ -120,6 +120,7 @@ class AudioProcessorTool(BaseTool):
                     "role": "user",
                     "content": message_content
                 }],
+                extra_body={'enable_thinking': config.ENABLE_THINKING},
                 temperature=config.LLM_TEMPERATURE,
                 max_tokens=config.LLM_MAX_TOKENS
             )

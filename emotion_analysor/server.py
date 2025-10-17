@@ -9,6 +9,7 @@ import uvicorn
 import logging
 import os
 import shutil
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -20,6 +21,7 @@ from models import (
     ErrorResponse
 )
 from crew.emotion_crew import EmotionDetectionCrew
+from data_logger import get_data_logger
 
 # 配置日志
 logging.basicConfig(
@@ -162,6 +164,10 @@ async def detect_emotion(request: EmotionDetectRequest):
     Returns:
         情绪识别结果
     """
+    # 记录开始时间
+    start_time = time.time()
+    data_logger = get_data_logger()
+    
     try:
         logger.info(f"收到情绪识别请求 - 文本: {request.text[:50] if request.text else None}, 音频: {request.audio_url}")
         
@@ -196,19 +202,116 @@ async def detect_emotion(request: EmotionDetectRequest):
         logger.info("开始执行情绪识别...")
         result = crew.analyze_emotion(request)
         
-        logger.info(f"情绪识别完成 - 主要情绪: {result.primary_emotion}")
+        # 计算处理耗时
+        processing_time = time.time() - start_time
+        
+        logger.info(f"情绪识别完成 - 主要情绪: {result.primary_emotion}, 耗时: {processing_time:.3f}秒")
+        
+        # 记录数据到日志文件
+        data_logger.log_analysis(
+            timestamp=result.timestamp,
+            text_input=request.text,
+            audio_input=request.audio_url,
+            conversation_history=request.conversation_history or [],
+            analysis_result={
+                "success": result.success,
+                "emotions": [
+                    {
+                        "emotion": e.emotion,
+                        "confidence": e.confidence,
+                        "reason": e.reason
+                    } for e in result.emotions
+                ],
+                "primary_emotion": result.primary_emotion
+            },
+            processing_time=processing_time,
+            success=result.success
+        )
         
         return result
         
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"情绪识别失败: {e}", exc_info=True)
+        # 计算处理耗时
+        processing_time = time.time() - start_time
+        
+        logger.error(f"情绪识别失败: {e}, 耗时: {processing_time:.3f}秒", exc_info=True)
+        
+        # 记录错误到日志
+        data_logger.log_analysis(
+            timestamp=time.strftime("%Y-%m-%dT%H:%M:%S"),
+            text_input=request.text,
+            audio_input=request.audio_url,
+            conversation_history=request.conversation_history or [],
+            analysis_result={},
+            processing_time=processing_time,
+            success=False,
+            error_message=str(e)
+        )
+        
         return EmotionDetectResponse(
             success=False,
             emotions=[],
-            primary_emotion="未知",
-            analysis=f"情绪识别过程出错: {str(e)}"
+            primary_emotion="未知"
+        )
+
+@app.get("/api/statistics")
+async def get_statistics(date: Optional[str] = None):
+    """
+    获取数据统计信息
+    
+    Args:
+        date: 日期 (YYYY-MM-DD)，默认为今天
+        
+    Returns:
+        统计信息
+    """
+    try:
+        data_logger = get_data_logger()
+        stats = data_logger.get_statistics(date)
+        
+        return {
+            "success": True,
+            "date": date or time.strftime("%Y-%m-%d"),
+            "statistics": stats
+        }
+        
+    except Exception as e:
+        logger.error(f"获取统计信息失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"获取统计信息失败: {str(e)}"
+        )
+
+@app.get("/api/logs")
+async def get_logs(date: Optional[str] = None, limit: int = 100):
+    """
+    获取分析日志记录
+    
+    Args:
+        date: 日期 (YYYY-MM-DD)，默认为今天
+        limit: 最多返回的记录数
+        
+    Returns:
+        日志记录列表
+    """
+    try:
+        data_logger = get_data_logger()
+        logs = data_logger.get_logs(date, limit)
+        
+        return {
+            "success": True,
+            "date": date or time.strftime("%Y-%m-%d"),
+            "count": len(logs),
+            "logs": logs
+        }
+        
+    except Exception as e:
+        logger.error(f"获取日志记录失败: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"获取日志记录失败: {str(e)}"
         )
 
 @app.exception_handler(Exception)

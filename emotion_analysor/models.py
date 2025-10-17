@@ -37,7 +37,6 @@ class EmotionDetectResponse(BaseModel):
     success: bool = Field(..., description="是否成功")
     emotions: List[EmotionResult] = Field(..., description="识别出的情绪列表")
     primary_emotion: str = Field(..., description="主要情绪")
-    analysis: str = Field(..., description="综合分析")
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
     
     class Config:
@@ -57,7 +56,6 @@ class EmotionDetectResponse(BaseModel):
                     }
                 ],
                 "primary_emotion": "开心",
-                "analysis": "用户当前处于非常愉悦的状态，从文本和语音中都能感受到强烈的正面情绪。",
                 "timestamp": "2025-10-16T12:00:00"
             }
         }

@@ -59,11 +59,11 @@
                         <div class="upload-content">
                             <div class="upload-icon">📁</div>
                             <p class="upload-text">点击或拖拽音频文件到此处</p>
-                            <p class="upload-hint">支持 MP3, WAV, M4A, OGG, FLAC 格式</p>
+                            <p class="upload-hint">支持 MP3, WAV, M4A, OGG, FLAC, WebM 格式</p>
                             <input 
                                 type="file" 
                                 id="audioInput" 
-                                accept=".mp3,.wav,.m4a,.ogg,.flac" 
+                                accept=".mp3,.wav,.m4a,.ogg,.flac,.webm" 
                                 class="file-input"
                             >
                         </div>
@@ -117,12 +117,6 @@
                             <div id="emotionsList"></div>
                         </div>
 
-                        <!-- 综合分析 -->
-                        <div class="analysis-section">
-                            <h3 class="subsection-title">综合分析</h3>
-                            <div id="analysisText" class="analysis-text"></div>
-                        </div>
-
                         <!-- 时间戳 -->
                         <div class="timestamp" id="timestamp"></div>
                     </div>
@@ -145,7 +139,7 @@
     <!-- Toast通知 -->
     <div id="toast" class="toast"></div>
 
-    <script src="/static/js/app.js"></script>
+    <script src="/static/js/app.js?v=1.0.1"></script>
 </body>
 </html>
 

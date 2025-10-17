@@ -522,19 +522,6 @@ body {
     line-height: 1.5;
 }
 
-/* 综合分析 */
-.analysis-section {
-    margin-bottom: 20px;
-}
-
-.analysis-text {
-    padding: 20px;
-    background: var(--bg-color);
-    border-radius: var(--radius-sm);
-    line-height: 1.8;
-    color: var(--text-primary);
-}
-
 /* 时间戳 */
 .timestamp {
     text-align: center;

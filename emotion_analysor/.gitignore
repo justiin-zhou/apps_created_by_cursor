@@ -21,6 +21,10 @@ ENV/
 uploads/*
 !uploads/.gitkeep
 
+# 数据日志
+data_logs/*
+!data_logs/.gitkeep
+
 # IDE
 .vscode/
 .idea/

@@ -11,34 +11,37 @@ const state = {
     stream: null
 };
 
-// DOM元素
-const elements = {
-    textInput: document.getElementById('textInput'),
-    audioInput: document.getElementById('audioInput'),
-    uploadArea: document.getElementById('uploadArea'),
-    fileInfo: document.getElementById('fileInfo'),
-    fileName: document.getElementById('fileName'),
-    removeFile: document.getElementById('removeFile'),
-    analyzeBtn: document.getElementById('analyzeBtn'),
-    loading: document.getElementById('loading'),
-    resultContent: document.getElementById('resultContent'),
-    emptyState: document.getElementById('emptyState'),
-    primaryEmotion: document.getElementById('primaryEmotion'),
-    emotionsList: document.getElementById('emotionsList'),
-    analysisText: document.getElementById('analysisText'),
-    timestamp: document.getElementById('timestamp'),
-    conversationHistory: document.getElementById('conversationHistory'),
-    clearHistory: document.getElementById('clearHistory'),
-    toast: document.getElementById('toast'),
-    // 录音相关
-    recordBtn: document.getElementById('recordBtn'),
-    stopRecordBtn: document.getElementById('stopRecordBtn'),
-    recordingInfo: document.getElementById('recordingInfo'),
-    recordingTime: document.getElementById('recordingTime')
-};
+// DOM元素（在DOM加载完成后初始化）
+let elements = {};
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
+    // 初始化DOM元素引用
+    elements = {
+        textInput: document.getElementById('textInput'),
+        audioInput: document.getElementById('audioInput'),
+        uploadArea: document.getElementById('uploadArea'),
+        fileInfo: document.getElementById('fileInfo'),
+        fileName: document.getElementById('fileName'),
+        removeFile: document.getElementById('removeFile'),
+        analyzeBtn: document.getElementById('analyzeBtn'),
+        loading: document.getElementById('loading'),
+        resultContent: document.getElementById('resultContent'),
+        emptyState: document.getElementById('emptyState'),
+        primaryEmotion: document.getElementById('primaryEmotion'),
+        emotionsList: document.getElementById('emotionsList'),
+        timestamp: document.getElementById('timestamp'),
+        conversationHistory: document.getElementById('conversationHistory'),
+        clearHistory: document.getElementById('clearHistory'),
+        toast: document.getElementById('toast'),
+        // 录音相关
+        recordBtn: document.getElementById('recordBtn'),
+        stopRecordBtn: document.getElementById('stopRecordBtn'),
+        recordingInfo: document.getElementById('recordingInfo'),
+        recordingTime: document.getElementById('recordingTime')
+    };
+    
+    // 初始化事件监听和其他功能
     initEventListeners();
     loadConversationHistory();
     checkHealth();
@@ -335,7 +338,7 @@ function handleDrop(e) {
 // 验证并上传文件
 async function validateAndUploadFile(file) {
     // 检查文件类型
-    const allowedTypes = ['.mp3', '.wav', '.m4a', '.ogg', '.flac'];
+    const allowedTypes = ['.mp3', '.wav', '.m4a', '.ogg', '.flac', '.webm'];
     const fileExt = '.' + file.name.split('.').pop().toLowerCase();
     
     if (!allowedTypes.includes(fileExt)) {
@@ -481,9 +484,6 @@ function displayResult(result) {
         `;
         elements.emotionsList.appendChild(item);
     });
-    
-    // 综合分析
-    elements.analysisText.textContent = result.analysis;
     
     // 时间戳
     const timestamp = new Date(result.timestamp).toLocaleString('zh-CN');

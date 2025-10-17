@@ -15,7 +15,9 @@ class Config:
     DASHSCOPE_API_BASE = os.getenv("DASHSCOPE_API_BASE", "https://dashscope.aliyuncs.com/compatible-mode/v1")
     
     # 模型配置
-    LLM_MODEL = os.getenv("LLM_MODEL", "qwen-omni")
+    OMNI_LLM_MODEL = os.getenv("OMNI_LLM_MODEL", "qwen3-omni-flash")
+    TEXT_LLM_MODEL = os.getenv("TEXT_LLM_MODEL", "qwen3-235b-a22b")
+    ENABLE_THINKING = os.getenv("ENABLE_THINKING", "false").lower() == "true"
     LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.7"))
     LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "4096"))
     
@@ -28,6 +30,9 @@ class Config:
     UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
     MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
     ALLOWED_AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".ogg", ".flac", ".webm"}
+    
+    # 数据日志配置
+    DATA_LOG_DIR = os.path.join(os.path.dirname(__file__), "data_logs")
     
     # 情绪分类配置
     EMOTION_CATEGORIES = [
@@ -52,8 +57,9 @@ class Config:
         if not cls.DASHSCOPE_API_KEY:
             raise ValueError("DASHSCOPE_API_KEY 未设置，请在.env文件中配置")
         
-        # 确保上传目录存在
+        # 确保必要的目录存在
         os.makedirs(cls.UPLOAD_DIR, exist_ok=True)
+        os.makedirs(cls.DATA_LOG_DIR, exist_ok=True)
         
         return True
 
