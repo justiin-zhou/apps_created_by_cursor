@@ -1,40 +1,95 @@
-使用 CrewAI Agent 框架创建一个完整的语音+文本情绪识别系统，包含以下要求：
+使用 CrewAI Agent 框架创建一个完整的多模态（语音+文本）情绪识别系统，包含以下要求：
 
 【核心功能】
-1. 支持根据对话历史和当前语音输入识别用户情绪；
-2. 情绪分类覆盖日常生活中人类常见情绪类型，分类结果可包含多个；
+1. 多模态情绪识别：支持文本输入、音频文件上传、实时录音三种输入方式
+2. 对话历史管理：结合对话上下文进行更准确的情绪判断（保留最近10条）
+3. 多情绪分类：覆盖日常生活中40+种常见情绪类型，可识别多个情绪及置信度
+4. 数据记录系统：自动记录每次分析的完整数据到本地文件（JSONL格式）
+5. 统计分析：提供情绪分布、成功率、处理时长等统计信息
+6. 实时录音：支持浏览器内实时录音（需HTTPS环境）
 
 【技术栈】
-- AI模型：qwen-omni(使用litellm访问qwen api)
-- 后端：FastAPI + CrewAI + LangChain
-- 前端：HTML/CSS/JS 现代化 Web UI
-- 架构：Multi-Agent 协作系统
+- AI模型：qwen-omni（多模态）/ qwen-plus（纯文本）通过 OpenAI SDK 访问
+- 后端：FastAPI + Uvicorn (HTTPS) + Pydantic
+- AI框架：CrewAI（简化版，直接使用 qwen-omni 而非多Agent协作）
+- 前端：HTML5/CSS3/Vanilla JS（支持录音API）
+- 数据存储：JSONL格式本地文件（按日期分割）
+- 安全：HTTPS + 自签名SSL证书（开发环境）
 
 【项目结构】
-emotion_detect/
-├── agents/              # 存放crewai agent
-├── tasks/               # 对应的任务定义
-├── tools/               # 存放定义的工具
-├── crew/                # EmotionDetectCrew 协作系统
-├── static/              # 前端：index.html, css/, js/
-├── config.py            # 支持qwen-omni
+emotion_analysor/
+├── agents/              # Agent定义（synthesis_agent.py）
+├── crew/                # EmotionDetectionCrew - 直接使用qwen-omni
+├── tools/               # 工具定义（audio_processor.py）
+├── static/              # 前端文件
+│   ├── index.html       # 主页面
+│   ├── css/style.css    # 样式
+│   └── js/app.js        # 逻辑（包含录音功能）
+├── uploads/             # 音频文件上传目录
+├── data_logs/           # 分析日志存储（JSONL格式，按日期）
+├── certs/               # SSL证书目录
+├── config.py            # 配置管理（支持qwen-omni + qwen-plus）
 ├── models.py            # Pydantic数据模型
-├── server.py            # FastAPI服务器
-├── requirements.txt
-├── env_template.txt
-└── README.md
+├── server.py            # FastAPI服务器（HTTPS支持）
+├── data_logger.py       # 数据记录模块
+├── start.sh             # 自动化启动脚本
+├── generate_cert.sh     # SSL证书生成脚本
+├── requirements.txt     # Python依赖
+├── env_template.txt     # 环境变量模板
+├── README.md            # 完整文档
+└── ARCHITECTURE.md      # 架构说明
 
 【API端点】
-- GET /: 返回前端页面
+- GET /: 返回前端主页
 - GET /health: 健康检查
-- POST /api/emotion_detect: 情绪识别
+- POST /api/upload_audio: 上传音频文件
+- POST /api/emotion_detect: 情绪识别（支持文本+音频+历史）
+- GET /api/statistics?date=YYYY-MM-DD: 获取统计信息
+- GET /api/logs?date=YYYY-MM-DD&limit=100: 查询分析日志
+
+【配置要点】
+环境变量（.env）：
+- DASHSCOPE_API_KEY: 阿里云DashScope API密钥
+- DASHSCOPE_API_BASE: API基础URL
+- OMNI_LLM_MODEL: 多模态模型（qwen-omni）
+- TEXT_LLM_MODEL: 纯文本模型（qwen-plus）
+- ENABLE_THINKING: 是否启用思考模式
+- USE_HTTPS: 是否启用HTTPS（默认True）
+- SSL_CERT_FILE / SSL_KEY_FILE: SSL证书路径
 
 【前端UI要求】
 - 紫蓝渐变主题（#667eea → #764ba2）
-- 支持文件拖拽上传
-- Loading动画+Toast通知
-- 聊天式问答界面
-- 响应式设计
-- 美观现代
+- 支持文件拖拽上传（支持格式：mp3, wav, m4a, ogg, flac, webm）
+- 实时录音功能（需HTTPS，显示录音时长）
+- Loading动画 + Toast通知
+- 对话历史展示（支持清空）
+- 情绪卡片展示（主要情绪 + 所有情绪列表）
+- 响应式设计，美观现代
 
-请创建一个生产级的情绪识别系统，代码清晰、注释完整、中文友好。
+【数据记录系统】
+- 自动记录每次分析：输入、输出、耗时、成功状态、错误信息
+- JSONL格式存储（每行一条JSON记录）
+- 按日期分割文件：emotion_analysis_YYYY-MM-DD.jsonl
+- 提供统计接口：总次数、成功率、平均耗时、情绪分布
+
+【HTTPS支持】
+- 默认启用HTTPS（支持浏览器录音需要）
+- 提供自动化证书生成脚本（generate_cert.sh）
+- 启动脚本（start.sh）自动检查证书并启动服务
+- 开发环境使用自签名证书（浏览器会显示警告，正常）
+
+【启动流程】
+1. 配置 .env 文件（从 env_template.txt 复制）
+2. 运行 ./start.sh 自动完成：
+   - 依赖检查和安装
+   - 环境变量验证
+   - SSL证书生成（如不存在）
+   - 启动HTTPS服务器
+3. 访问 https://localhost:8000
+
+请创建一个生产级的多模态情绪识别系统，具备：
+- 完善的错误处理和日志记录
+- 清晰的代码结构和注释（中文）
+- 完整的数据记录和统计功能
+- 安全的HTTPS环境支持
+- 友好的用户界面和交互体验
