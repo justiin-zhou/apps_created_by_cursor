@@ -12,3 +12,8 @@ HOST=0.0.0.0
 PORT=8000
 DEBUG=True
 
+# HTTPS 配置
+USE_HTTPS=true
+# SSL_CERT_FILE=certs/cert.pem
+# SSL_KEY_FILE=certs/key.pem
+

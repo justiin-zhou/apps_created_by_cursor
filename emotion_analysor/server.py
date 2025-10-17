@@ -328,14 +328,34 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 def main():
     """启动服务器"""
-    logger.info(f"启动服务器 - Host: {config.HOST}, Port: {config.PORT}")
-    uvicorn.run(
-        "server:app",
-        host=config.HOST,
-        port=config.PORT,
-        reload=config.DEBUG,
-        log_level="info"
-    )
+    protocol = "https" if config.USE_HTTPS else "http"
+    logger.info(f"启动服务器 - Protocol: {protocol}, Host: {config.HOST}, Port: {config.PORT}")
+    
+    # 配置 uvicorn 参数
+    uvicorn_config = {
+        "app": "server:app",
+        "host": config.HOST,
+        "port": config.PORT,
+        "reload": config.DEBUG,
+        "log_level": "info"
+    }
+    
+    # 如果启用 HTTPS，添加 SSL 证书配置
+    if config.USE_HTTPS:
+        if not os.path.exists(config.SSL_CERT_FILE) or not os.path.exists(config.SSL_KEY_FILE):
+            logger.error(f"SSL 证书文件不存在！")
+            logger.error(f"证书文件: {config.SSL_CERT_FILE}")
+            logger.error(f"密钥文件: {config.SSL_KEY_FILE}")
+            logger.error(f"请运行 ./generate_cert.sh 生成证书")
+            raise FileNotFoundError("SSL 证书文件不存在")
+        
+        uvicorn_config["ssl_certfile"] = config.SSL_CERT_FILE
+        uvicorn_config["ssl_keyfile"] = config.SSL_KEY_FILE
+        logger.info(f"已启用 HTTPS")
+        logger.info(f"证书文件: {config.SSL_CERT_FILE}")
+        logger.info(f"密钥文件: {config.SSL_KEY_FILE}")
+    
+    uvicorn.run(**uvicorn_config)
 
 if __name__ == "__main__":
     main()

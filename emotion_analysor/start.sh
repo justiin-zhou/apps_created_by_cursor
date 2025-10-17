@@ -37,6 +37,17 @@ fi
 # 创建必要的目录
 echo "📁 创建必要的目录..."
 mkdir -p uploads
+mkdir -p certs
+
+# 检查并生成 SSL 证书
+echo ""
+echo "🔒 检查 SSL 证书..."
+if [ ! -f "certs/cert.pem" ] || [ ! -f "certs/key.pem" ]; then
+    echo "📝 SSL 证书不存在，正在生成..."
+    ./generate_cert.sh
+else
+    echo "✅ SSL 证书已存在"
+fi
 
 # 启动服务器
 echo ""
@@ -44,7 +55,8 @@ echo "=========================================="
 echo "  🚀 启动服务器..."
 echo "=========================================="
 echo ""
-echo "访问地址: http://localhost:8000"
+echo "访问地址: https://localhost:8000"
+echo "📱 如使用自签名证书，浏览器会提示安全警告，请点击'继续访问'"
 echo "按 Ctrl+C 停止服务器"
 echo ""
 

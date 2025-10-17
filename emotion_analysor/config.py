@@ -26,6 +26,11 @@ class Config:
     PORT = int(os.getenv("PORT", "8000"))
     DEBUG = os.getenv("DEBUG", "True").lower() == "true"
     
+    # HTTPS 配置
+    USE_HTTPS = os.getenv("USE_HTTPS", "true").lower() == "true"
+    SSL_CERT_FILE = os.getenv("SSL_CERT_FILE", os.path.join(os.path.dirname(__file__), "certs", "cert.pem"))
+    SSL_KEY_FILE = os.getenv("SSL_KEY_FILE", os.path.join(os.path.dirname(__file__), "certs", "key.pem"))
+    
     # 文件上传配置
     UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "uploads")
     MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB

@@ -25,6 +25,13 @@ uploads/*
 data_logs/*
 !data_logs/.gitkeep
 
+# SSL 证书（安全考虑，不提交证书文件）
+certs/
+*.pem
+*.key
+*.crt
+*.csr
+
 # IDE
 .vscode/
 .idea/
